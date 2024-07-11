@@ -7,6 +7,7 @@
 #include "utils.h"
 #define TIME_ZONE -5
  
+ // NODEMCU 1.0 Board
 char publish_topic[15] = "esp8266/pub";
 char subscribe_topic[15] = "esp8266/sub";
  
