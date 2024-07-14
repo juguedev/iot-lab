@@ -1,4 +1,5 @@
-// This should be declared after the declaration of SerialMon, myELM327 and the other needed objects
+#include "BluetoothSerial.h"
+
 void  connectToBluetoothDevice() {
   SerialMon.println("Connecting to ELM327 - Phase 1: Bluetooth");
 
@@ -12,13 +13,13 @@ void  connectToBluetoothDevice() {
   }
 }
 
-void establishOBDConnection() {
+void establishOBDConnection(bool debug, char protocol) {
   SerialMon.println("Connecting to ELM327 - Phase 2: OBD");
-  if (!myELM327.begin(SerialELM, protocol = 'A')) {
+  if (!myELM327.begin(SerialELM, debug, 1000, protocol, 40, 0)) {
     SerialMon.println("Couldn't connect to OBD scanner - Phase 2: OBD");
     SerialMon.println("Retryng...");
     delay(2000);
-    establishOBDConnection();
+    establishOBDConnection(debug, protocol);
   } else {
     SerialMon.println("Connected to ELM327 - Phase 2: OBD");
   }
