@@ -31,10 +31,14 @@ char jsonBuffer[512];
 
 TinyGsm modem(SerialAT);
 TinyGsmClient base_client(modem);
+SSLClient ssl_client(&base_client);
+PubSubClient mqtt(ssl_client);
 
 
-
+#include "secrets.h"
 #include "utils.h"
+
+
 
 void setup() {
   SerialMon.begin(115200);
@@ -61,5 +65,6 @@ void loop() {
   }
   else if (myELM327.nb_rx_state != ELM_GETTING_MSG)
     myELM327.printError();
+  delay(200);
   
 }

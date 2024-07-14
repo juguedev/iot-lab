@@ -66,9 +66,18 @@ void  connectToBluetoothDevice() {
   }
 }
 
+
+void handleMessageReceived(char *topic, byte *payload, unsigned int length) {
+  Serial.print("Received [");
+  Serial.print(topic);
+  Serial.print("]: ");
+  Serial.write(payload, length);
+  Serial.println();
+}
+
 void establishOBDConnection(bool debug, char protocol) {
   SerialMon.println("Connecting to ELM327 - Phase 2: OBD");
-  if (!myELM327.begin(SerialELM, debug, 1000, protocol, 40, 0)) {
+  if (!myELM327.begin(SerialELM, debug, 2000, protocol, 40, 0)) {
     SerialMon.println("Couldn't connect to OBD scanner - Phase 2: OBD");
     SerialMon.println("Retryng...");
     delay(2000);
