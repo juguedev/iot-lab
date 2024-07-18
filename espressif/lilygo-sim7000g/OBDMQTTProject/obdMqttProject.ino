@@ -6,6 +6,13 @@
 #include "BluetoothSerial.h"
 #include "ELMduino.h"
 
+// FUNCIONAAAA PERO CON LOS SIGUIENTES PROBLEMAS DETECTADOS
+// Cada cierto tiempo el modulo pierde conectividad (se bugea) y necesito cargar el de sms
+// Cada cierto tiempo el modulo cambia la medición de RPMs (Revisando logs al desconectarse el ssl, los datos comienzan a tener sentido)
+// Cada cierto tiempo el modulo deja de pasar la segunda Phase (De momento hemos detectado que al desactivar el verbose) pasa
+// Faltan añadir validaciones
+// Faltan añadir el bucle del connect IoT
+
 BluetoothSerial SerialBT;
 #define SerialELM SerialBT
 #define SerialMon Serial
@@ -34,20 +41,39 @@ TinyGsmClient base_client(modem);
 SSLClient ssl_client(&base_client);
 PubSubClient mqtt(ssl_client);
 
-
+// IT IS EXTREMELY IMPORTANT TO INCLUDE UTILS AFTER DEFINING THE COMPONENTS IT REQUIRES
 #include "secrets.h"
 #include "utils.h"
 
 
+// Connect to AWS IoT
+void connectAWSIoT() {
+  ssl_client.setCACert(ca_cert);
+  ssl_client.setCertificate(client_cert);
+  ssl_client.setPrivateKey(client_key);
+
+  mqtt.setServer(mqtt_server, mqtt_port);
+  mqtt.setCallback(handleMessageReceived);
+  
+  SerialMon.println("Connecting to AWS IoT...");
+  mqtt.connect(thing);
+}
 
 void setup() {
   SerialMon.begin(115200);
 
+  // The following lines are needed to start the modem and avoid connectivity loss
+  pinMode(4, OUTPUT);
+  digitalWrite(4, HIGH);
+  delay(300);
+  digitalWrite(4, LOW);
 
   initializeModem(modem);
   registerToNetwork(modem);
   connectToGPRS(modem);
+  connectAWSIoT();
 
+  // IT IS EXTREMELY IMPORTANT TO SET UP THE DEVICE GPRS BEFORE STARTING THE ELM CONNECTION
   SerialELM.begin("ESP32", true);
   //SerialBT.setPin("1234");
 
@@ -58,13 +84,15 @@ void setup() {
 
 void loop() {
   float tempRPM = (uint32_t)myELM327.rpm();
-
+  mqtt.loop();
+  
   if (myELM327.nb_rx_state == ELM_SUCCESS)
   {
     Serial.print("RPM: "); Serial.println(tempRPM);
+    jsonFormatter(jsonBuffer, "30", tempRPM);
+    mqtt.publish(publish_topic, jsonBuffer);
   }
   else if (myELM327.nb_rx_state != ELM_GETTING_MSG)
     myELM327.printError();
-  delay(200);
-  
+  delay(500);
 }

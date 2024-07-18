@@ -1,3 +1,4 @@
+#include "BluetoothSerial.h"
 
 #include <ArduinoJson.h>
 
@@ -29,39 +30,8 @@ void initializeModem(TinyGsm modem) {
   }
 }
 
-void getModemGeneralInfo(TinyGsm modem) {
-  SerialMon.println("Showing general modem information: ");
-  String modemInfo = modem.getModemInfo();
-  SerialMon.print("Modem Info: ");
-  SerialMon.println(modemInfo);
-
-  String name = modem.getModemName();
-  SerialMon.print("Modem Name: ");
-  SerialMon.println(name);
-
-  String ccid = modem.getSimCCID();
-  SerialMon.print("CCID: ");
-  SerialMon.println(ccid);
-
-  String imei = modem.getIMEI();
-  SerialMon.print("IMEI: ");
-  SerialMon.println(imei);
-
-  String imsi = modem.getIMSI();
-  SerialMon.print("IMSI: ");
-  SerialMon.println(imsi);
-
-  String cop = modem.getOperator();
-  SerialMon.print("Operator: ");
-  SerialMon.println(cop);
-
-  bool res = modem.isGprsConnected();
-  SerialMon.print("GPRS status:: ");
-  SerialMon.println(res ? "connected" : "not connected");
-}
-
-
 void registerToNetwork(TinyGsm modem) {
+  delay(1000);
   if (modem.waitForNetwork()) {
     SerialMon.println("Registered on network.");
   } else {
@@ -71,6 +41,7 @@ void registerToNetwork(TinyGsm modem) {
 }
 
 void connectToGPRS(TinyGsm modem) {
+  delay(1000);
   if (modem.isGprsConnected()) {
     SerialMon.println("Connected to GPRS network.");
   } else {
@@ -82,14 +53,19 @@ void connectToGPRS(TinyGsm modem) {
 }
 
 
-void jsonFormatter(char *jsonBuffer, String t, float h) {
-  StaticJsonDocument<200> doc;
-  doc["time"] = millis();
-  doc["humidity"] = h;
-  doc["temperature"] = t;
-  serializeJson(doc, jsonBuffer, 512);
-  Serial.println(jsonBuffer);
+void  connectToBluetoothDevice() {
+  SerialMon.println("Connecting to ELM327 - Phase 1: Bluetooth");
+
+  if (!SerialELM.connect(address)) {  // Bu default #define READY_TIMEOUT (10 * 1000)
+    SerialMon.println("Couldn't connect to ELM327 - Phase 1: Bluetooth");
+    SerialMon.println("Retryng...");
+    delay(2000);
+    connectToBluetoothDevice();
+  } else {
+    SerialMon.println("Connected to ELM327 - Phase 1: Bluetooth");
+  }
 }
+
 
 void handleMessageReceived(char *topic, byte *payload, unsigned int length) {
   Serial.print("Received [");
@@ -97,4 +73,27 @@ void handleMessageReceived(char *topic, byte *payload, unsigned int length) {
   Serial.print("]: ");
   Serial.write(payload, length);
   Serial.println();
+}
+
+
+void jsonFormatter(char *jsonBuffer, String t, float r) {
+  StaticJsonDocument<200> doc;
+  doc["time"] = millis();
+  doc["rpm"] = r;
+  doc["temperature"] = t;
+  serializeJson(doc, jsonBuffer, 512);
+  Serial.println(jsonBuffer);
+}
+
+void establishOBDConnection(bool debug, char protocol) {
+  SerialMon.println("Connecting to ELM327 - Phase 2: OBD");
+  if (!myELM327.begin(SerialELM, debug, 2000, protocol, 40, 0)) {
+    SerialMon.println("Couldn't connect to OBD scanner - Phase 2: OBD");
+    SerialMon.println("Retryng...");
+    delay(2000);
+    establishOBDConnection(debug, protocol);
+  } else {
+    SerialMon.println("Connected to ELM327 - Phase 2: OBD");
+  }
+  SerialMon.println("Connection process to ELM327 succesfully ended.");
 }

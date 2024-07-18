@@ -6,7 +6,7 @@
 // See all AT commands, if wanted
 #define DUMP_AT_COMMANDS
 
-#define SMS_TARGET  "+519*********" // Número de celular de destino
+#define SMS_TARGET  "+51925810734" // Número de celular de destino
 
 // set GSM PIN, if any
 #define GSM_PIN ""
