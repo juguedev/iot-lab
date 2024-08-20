@@ -1,0 +1,124 @@
+[
+    {
+        "id": "098aa5ee3ff5101c",
+        "type": "tab",
+        "label": "DHT11 Custom Dashboard",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "b5136629e78f3932",
+        "type": "http in",
+        "z": "098aa5ee3ff5101c",
+        "name": "",
+        "url": "/sendReadings",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 410,
+        "y": 580,
+        "wires": [
+            [
+                "94dfa9d81e3397dd"
+            ]
+        ]
+    },
+    {
+        "id": "26a53cd14d224d8d",
+        "type": "function",
+        "z": "098aa5ee3ff5101c",
+        "name": "Get Temperature Readings",
+        "func": "var message_object = {};\nmessage_object[\"temperature_fahrenheit\"]=parseInt(msg.payload,10);//20\nmsg.payload = message_object\n// msg.payload = { temperature: msg.payload, humidity: msg.humidity};\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 840,
+        "y": 580,
+        "wires": [
+            [
+                "f46a7d5c48f657d9",
+                "754603ab85be048e"
+            ]
+        ]
+    },
+    {
+        "id": "94dfa9d81e3397dd",
+        "type": "rpi-dht22",
+        "z": "098aa5ee3ff5101c",
+        "name": "",
+        "topic": "DHT11",
+        "dht": 11,
+        "pintype": "0",
+        "pin": 4,
+        "x": 600,
+        "y": 480,
+        "wires": [
+            [
+                "26a53cd14d224d8d"
+            ]
+        ]
+    },
+    {
+        "id": "6692713377943b0b",
+        "type": "http response",
+        "z": "098aa5ee3ff5101c",
+        "name": "",
+        "statusCode": "200",
+        "headers": {},
+        "x": 1300,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "f46a7d5c48f657d9",
+        "type": "change",
+        "z": "098aa5ee3ff5101c",
+        "name": "Set Headers",
+        "rules": [
+            {
+                "t": "set",
+                "p": "headers",
+                "pt": "msg",
+                "to": "{}",
+                "tot": "json"
+            },
+            {
+                "t": "set",
+                "p": "headers.content-type",
+                "pt": "msg",
+                "to": "application/json",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1050,
+        "y": 480,
+        "wires": [
+            [
+                "6692713377943b0b"
+            ]
+        ]
+    },
+    {
+        "id": "754603ab85be048e",
+        "type": "google-cloud-pubsub out",
+        "z": "098aa5ee3ff5101c",
+        "account": "", 
+        "keyFilename": "",
+        "topic": "example-topic",
+        "name": "",
+        "x": 1100,
+        "y": 620,
+        "wires": [
+            []
+        ]
+    }
+]
