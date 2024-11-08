@@ -18,7 +18,7 @@ Install DHT Nodes:
 node-red-contrib-dht-sensor in node red using the Palette in user settings.
 
 Install GCP Nodes:
-npm install node-red-contrib-google-cloud
+node-red-contrib-google-cloud
 
 Load the example provided here: 
     https://www.donskytech.com/node-red-dht11-dht22-custom-weather-station-dashboard/ 
