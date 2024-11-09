@@ -28,8 +28,9 @@ Load the example provided here:
 
 Crear recursos en la nube de GCP.
 Luego crear manualmente el API Key y descargar el JSON.
-Posteriormente levantar el servidor de node red y exportar el flow.json correspondiente.
+Posteriormente levantar el servidor de node red y exportar el flow.json correspondiente. Para poder acceder a los datos de los IOs se debe tener permisos sudo.
 ```
+sudo su
 export GOOGLE_CLOUD_PROJECT=august-tract-432316-e2
 node-red
 ```
